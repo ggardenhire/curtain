@@ -83,6 +83,12 @@ Managing React's dependency/build surface (keeps the security mandate intact):
 - Structure: `client/` holds the Vite+React app; `server.js` serves the built
   `client/dist` plus the `/api/*` JSON. Dev runs Vite (hot reload) + Node, with
   Vite proxying `/api` → `localhost:1939`. Prod: Node serves `client/dist`.
+- **Static serving is path-traversal hardened** (`serveStatic` in `server.js`):
+  decode once → `path.resolve` under `DIST_DIR` → **containment check**
+  (`filePath` must stay within `DIST_DIR`) → 403 if it escapes, 404 if missing.
+  This containment check is the load-bearing defense (URL normalization alone
+  does NOT stop `%2f`-encoded traversal). Don't weaken it; re-test with the
+  traversal battery if you touch it.
 
 ## Branding / visual output
 
