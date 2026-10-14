@@ -113,6 +113,19 @@ curtain is meant to ship as a **Docker container running on the Unraid server**
 - Favor a minimal image (no extra system binaries) — another reason to prefer
   Node built-ins over shelling out or broad libraries.
 
+## Configuration (environment variables)
+
+All admin config comes from env vars (set via Docker `-e` / compose in prod):
+
+- `PLEX_URL`, `JELLYFIN_URL`, `SEERR_URL` — quick-link targets. A link only
+  appears if its var is set to a valid `http(s)` URL (`links.js` → `getLinks` /
+  `isValidHttpUrl`). Adding a service = add one entry to the `SERVICES` allowlist.
+- `DISK_PATH` (planned) — path whose usage is shown; in the container this is the
+  **read-only bind-mount** point.
+
+**Security rule:** only read specific, named env vars via the `SERVICES`
+allowlist. NEVER iterate/expose `process.env` wholesale — it holds secrets.
+
 ## Environment
 
 - Node `v22.23.1`, npm `10.9.8`, Linux (WSL2) for dev. Git repo, `main` branch.

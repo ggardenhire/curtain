@@ -1,6 +1,7 @@
 // Load the built-in HTTP module
 import http from 'node:http';
 import getMetrics from './metrics.js';
+import getLinks from './links.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
@@ -28,6 +29,10 @@ const server = http.createServer(async (req, res) => {
         res.setHeader('Content-Type', 'application/json');
         const data = await getMetrics();
         res.end(JSON.stringify(data));
+    } else if (req.url === '/api/links' && req.method === 'GET') {
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify(getLinks()))
     } else if (req.url.startsWith('/api/')) {
         res.statusCode = 404;
         res.setHeader('Content-Type', 'application/json');

@@ -5,6 +5,7 @@ import './App.css'
 function App() {
   const [metrics, setMetrics] = useState(null)
   const [error, setError] = useState(false)
+  const [links, setLinks] = useState([])
     
   async function loadMetrics() {
     try {
@@ -18,10 +19,23 @@ function App() {
     }
   }
 
-  
+  async function loadLinks() {
+    try {
+      const res = await fetch('/api/links')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setLinks(await res.json())
+    } catch (err) {
+      console.error('links fetch failed:', err.message)
+    }
+  }
   useEffect(() => {
     loadMetrics()
-    const id = setInterval(loadMetrics, 5000)   // then poll every 5s
+    loadLinks()
+    const id = setInterval(() => {
+      loadMetrics()
+      loadLinks()
+    }
+    , 5000)   // then poll every 5s
     return () => clearInterval(id)
   }, []) 
 
@@ -46,6 +60,21 @@ function App() {
           ? <div className="stat"><span className="label">Uptime (hours)</span><span className="value">{metrics.uptimeHours}</span></div>
           : <div className="stat"><span className="label">Uptime (hours)</span><span className="value unavailable">unavailable</span></div>}
       </div>
+      {links.length > 0 && (
+        <nav className="links">
+          <h2>Links</h2>
+          <ul>
+            {links.map(link => (
+              <li key={link.label}>
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                <img className="link-icon" src={link.icon} alt="" />
+                <span>{link.label}</span>
+              </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </main>
   )
 }
