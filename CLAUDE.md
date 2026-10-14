@@ -83,6 +83,12 @@ Managing React's dependency/build surface (keeps the security mandate intact):
 - Structure: `client/` holds the Vite+React app; `server.js` serves the built
   `client/dist` plus the `/api/*` JSON. Dev runs Vite (hot reload) + Node, with
   Vite proxying `/api` → `localhost:1939`. Prod: Node serves `client/dist`.
+- **Static serving is path-traversal hardened** (`serveStatic` in `server.js`):
+  decode once → `path.resolve` under `DIST_DIR` → **containment check**
+  (`filePath` must stay within `DIST_DIR`) → 403 if it escapes, 404 if missing.
+  This containment check is the load-bearing defense (URL normalization alone
+  does NOT stop `%2f`-encoded traversal). Don't weaken it; re-test with the
+  traversal battery if you touch it.
 
 ## Branding / visual output
 
@@ -106,6 +112,19 @@ curtain is meant to ship as a **Docker container running on the Unraid server**
 - Run the container **non-root, no added capabilities, never `--privileged`.**
 - Favor a minimal image (no extra system binaries) — another reason to prefer
   Node built-ins over shelling out or broad libraries.
+
+## Configuration (environment variables)
+
+All admin config comes from env vars (set via Docker `-e` / compose in prod):
+
+- `PLEX_URL`, `JELLYFIN_URL`, `SEERR_URL` — quick-link targets. A link only
+  appears if its var is set to a valid `http(s)` URL (`links.js` → `getLinks` /
+  `isValidHttpUrl`). Adding a service = add one entry to the `SERVICES` allowlist.
+- `DISK_PATH` (planned) — path whose usage is shown; in the container this is the
+  **read-only bind-mount** point.
+
+**Security rule:** only read specific, named env vars via the `SERVICES`
+allowlist. NEVER iterate/expose `process.env` wholesale — it holds secrets.
 
 ## Environment
 
