@@ -2,6 +2,8 @@
 import http from 'node:http';
 import getMetrics from './metrics.js';
 import getLinks from './links.js';
+import { getStorage, refreshStorage } from './storage.js';
+import getConfig from './config.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
@@ -33,6 +35,14 @@ const server = http.createServer(async (req, res) => {
         res.statusCode = 200
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify(getLinks()))
+    } else if (req.url === '/api/config' && req.method === 'GET') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(getConfig()));
+    } else if (req.url === '/api/storage' && req.method === 'GET') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(getStorage()));
     } else if (req.url.startsWith('/api/')) {
         res.statusCode = 404;
         res.setHeader('Content-Type', 'application/json');
@@ -81,5 +91,7 @@ async function serveStatic(req, res) {
 
 // Start the server and listen on the specified port
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+    refreshStorage();
+    setInterval(refreshStorage, 10 * 60 * 1000)
+    console.log(`Server running at http://localhost:${PORT}/`);
 });

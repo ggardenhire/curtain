@@ -22,3 +22,4 @@ function isValidHttpUrl(value) {
 }
 
 export default getLinks
+export { isValidHttpUrl }
