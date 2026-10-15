@@ -1,0 +1,48 @@
+services:
+  curtain:
+    build: .                    # build from the local Dockerfile…
+    image: curtain:latest       # …and tag it (or, on Unraid, pull this tag)
+    container_name: curtain
+    restart: unless-stopped     # auto-restart on crash / host reboot
+
+    ports:
+      - "1939:1939"             # host:container
+
+    # Config. Inline is fine, but see the note below about keeping real
+    # IPs/URLs out of version control via env_file.
+    environment:
+      SERVER_NAME: "Emerald Server"
+      CONTACT_URL: "https://your-portfolio-filler-website.com"
+      DISK_PATH: /data/movies
+      STORAGE_1_NAME: Movies
+      STORAGE_1_PATH: /data/movies
+      STORAGE_2_NAME: Shows
+      STORAGE_2_PATH: /data/shows
+      STORAGE_3_NAME: Photos
+      STORAGE_3_PATH: /data/photos
+      LINK_1_LABEL: Plex
+      LINK_1_URL: "http://localhost:32400"
+      LINK_1_ICON: /logos/plex.png
+      LINK_2_LABEL: Jellyfin
+      LINK_2_URL: "http://localhost:8096"
+      LINK_2_ICON: /logos/jellyfin.png
+
+    volumes:                    # host:container:ro — READ-ONLY bind mounts
+      - /mnt/user/data/media/Movies:/data/movies:ro
+      - /mnt/user/data/media/Shows:/data/shows:ro
+      - /mnt/user/immich:/data/photos:ro
+
+    # --- hardening (our mandate, in declarative form) ---
+    cap_drop:
+      - ALL                     # no Linux capabilities
+    security_opt:
+      - no-new-privileges:true  # block privilege escalation
+    read_only: true             # container's OWN filesystem is read-only too
+    # user: "99:100"            # Unraid: uncomment to match nobody:users if reads are denied
+
+    healthcheck:                # Docker marks the container healthy/unhealthy
+      test: ["CMD", "node", "-e", "fetch('http://localhost:1939/api/metrics').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
