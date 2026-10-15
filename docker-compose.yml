@@ -1,6 +1,6 @@
 services:
   curtain:
-    image: ggarden/curtain:1.0.0     # …and tag it (or, on Unraid, pull this tag)
+    image: ggarden/curtain:1.0.1
     container_name: curtain
     restart: unless-stopped     # auto-restart on crash / host reboot
 
