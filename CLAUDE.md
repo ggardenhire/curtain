@@ -83,6 +83,12 @@ Managing React's dependency/build surface (keeps the security mandate intact):
 - Structure: `client/` holds the Vite+React app; `server.js` serves the built
   `client/dist` plus the `/api/*` JSON. Dev runs Vite (hot reload) + Node, with
   Vite proxying `/api` → `localhost:1939`. Prod: Node serves `client/dist`.
+- **Static serving is path-traversal hardened** (`serveStatic` in `server.js`):
+  decode once → `path.resolve` under `DIST_DIR` → **containment check**
+  (`filePath` must stay within `DIST_DIR`) → 403 if it escapes, 404 if missing.
+  This containment check is the load-bearing defense (URL normalization alone
+  does NOT stop `%2f`-encoded traversal). Don't weaken it; re-test with the
+  traversal battery if you touch it.
 
 ## Branding / visual output
 
@@ -106,6 +112,30 @@ curtain is meant to ship as a **Docker container running on the Unraid server**
 - Run the container **non-root, no added capabilities, never `--privileged`.**
 - Favor a minimal image (no extra system binaries) — another reason to prefer
   Node built-ins over shelling out or broad libraries.
+
+## Configuration (environment variables)
+
+All admin config comes from env vars (Docker `-e`/compose in prod; in dev use a
+gitignored `.env` + `node --env-file=.env server.js`). Config uses **numbered
+env vars** (chosen to fit Unraid's one-field-per-variable template UI):
+
+- `SERVER_NAME` — dashboard title (default `curtain`); rendered as typed.
+- `CONTACT_URL` (+ optional `CONTACT_LABEL`) — footer link to the maintainer's
+  site/portfolio (NOT an admin console); shown only if a valid `http(s)` URL.
+- `DISK_PATH` — path whose filesystem total/free is read (`statfs`); in the
+  container, a read-only bind-mount point on the array.
+- **Storage pie** (max 3): `STORAGE_<n>_NAME` + `STORAGE_<n>_PATH` for n=1..3.
+  Each measured dir is a wedge; remaining used space → "Other", plus "Free".
+  Paths are in-container mount targets, bind-mounted **READ-ONLY** (`:ro`).
+- **Links** (max ~12): `LINK_<n>_LABEL` + `LINK_<n>_URL` + optional
+  `LINK_<n>_ICON` (local `/logos/..` preferred; external `http(s)` allowed but
+  makes visitors' browsers fetch it — privacy/availability cost).
+
+**Security rules:**
+- All URLs validated to `http(s)` (`isValidHttpUrl`); invalid/missing → omitted
+  (fail closed). Icons: local path or `http(s)` only.
+- Read ONLY these specific, bounded, named vars (fixed prefixes, indices 1..N) —
+  an allowlist by construction. NEVER iterate `process.env` wholesale (secrets).
 
 ## Environment
 
