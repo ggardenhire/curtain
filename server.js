@@ -2,6 +2,8 @@
 import http from 'node:http';
 import getMetrics from './metrics.js';
 import getLinks from './links.js';
+import { getStorage, refreshStorage } from './storage.js';
+import getConfig from './config.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
@@ -20,10 +22,29 @@ const MIME = {
 };
 const PORT = 1939; //Release date for The Wizard of Oz
 
+// Security headers applied to EVERY response (defense in depth for a public, no-auth surface)
+function setSecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');       // block MIME sniffing
+  res.setHeader('X-Frame-Options', 'DENY');                 // anti-clickjacking (legacy header)
+  res.setHeader('Referrer-Policy', 'no-referrer');          // don't leak our URL to link targets
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",   // React inline styles (pie gradient + swatches)
+    "img-src 'self' https: data:",        // self-hosted logos + optional external https icons
+    "connect-src 'self'",                 // the /api/* fetches
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'",             // modern anti-clickjacking
+  ].join('; '));
+}
+
 // Create an HTTP server
 const server = http.createServer(async (req, res) => {
-  
+
   try {
+    setSecurityHeaders(res);
     if (req.url === '/api/metrics' && req.method === 'GET') {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -33,6 +54,14 @@ const server = http.createServer(async (req, res) => {
         res.statusCode = 200
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify(getLinks()))
+    } else if (req.url === '/api/config' && req.method === 'GET') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(getConfig()));
+    } else if (req.url === '/api/storage' && req.method === 'GET') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(getStorage()));
     } else if (req.url.startsWith('/api/')) {
         res.statusCode = 404;
         res.setHeader('Content-Type', 'application/json');
@@ -81,5 +110,7 @@ async function serveStatic(req, res) {
 
 // Start the server and listen on the specified port
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+    refreshStorage();
+    setInterval(refreshStorage, 10 * 60 * 1000)
+    console.log(`Server running at http://localhost:${PORT}/`);
 });

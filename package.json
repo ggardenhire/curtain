@@ -13,8 +13,8 @@
     "url": "git+https://github.com/ggardenhire/curtain.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Garret Gardenhire",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ggardenhire/curtain/issues"
   },
