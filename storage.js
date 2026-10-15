@@ -27,27 +27,31 @@ async function directorySize(dir) {
 
 const MAX_STORAGE_PATHS = 3
 
-const allStoragePaths = (process.env.STORAGE_PATHS || '')
-  .split(',').map(s => s.trim()).filter(Boolean)   // "" → [] safely
-
-if (allStoragePaths.length > MAX_STORAGE_PATHS) {
-  console.warn(
-    `STORAGE_PATHS: ${allStoragePaths.length} paths provided, only the first ` +
-    `${MAX_STORAGE_PATHS} will be shown (the rest fall into "Other").`
-  )
+function readStoragePaths() {
+  const paths = []
+  for (let i = 1; i <= MAX_STORAGE_PATHS; i++) {
+    const name = process.env[`STORAGE_${i}_NAME`]
+    const dir  = process.env[`STORAGE_${i}_PATH`]
+    if (name && dir) paths.push({ name, dir })      // need both
+  }
+  if (process.env[`STORAGE_${MAX_STORAGE_PATHS + 1}_PATH`]) {
+    console.warn(`Only ${MAX_STORAGE_PATHS} storage paths are shown; extras fold into "Other".`)
+  }
+  return paths
 }
 
-const STORAGE_PATHS = allStoragePaths.slice(0, MAX_STORAGE_PATHS)   // cap at three
+const STORAGE_PATHS = readStoragePaths()
 
 let cache = { ready: false, total: 0, segments: [], updatedAt: null }
 
 async function refreshStorage() {
   try {
     const measured = []
-    for (const p of STORAGE_PATHS) {
-      const bytes = await directorySize(p)
-      measured.push({ label: path.basename(p), bytes })
+    for (const { name, dir } of STORAGE_PATHS) {
+      const bytes = await directorySize(dir)
+      measured.push({ label: name, bytes })
     }
+
 
     const fs = await statfs(process.env.DISK_PATH || '/')
     const total = fs.bsize * fs.blocks

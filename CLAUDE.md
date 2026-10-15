@@ -115,16 +115,27 @@ curtain is meant to ship as a **Docker container running on the Unraid server**
 
 ## Configuration (environment variables)
 
-All admin config comes from env vars (set via Docker `-e` / compose in prod):
+All admin config comes from env vars (Docker `-e`/compose in prod; in dev use a
+gitignored `.env` + `node --env-file=.env server.js`). Config uses **numbered
+env vars** (chosen to fit Unraid's one-field-per-variable template UI):
 
-- `PLEX_URL`, `JELLYFIN_URL`, `SEERR_URL` — quick-link targets. A link only
-  appears if its var is set to a valid `http(s)` URL (`links.js` → `getLinks` /
-  `isValidHttpUrl`). Adding a service = add one entry to the `SERVICES` allowlist.
-- `DISK_PATH` (planned) — path whose usage is shown; in the container this is the
-  **read-only bind-mount** point.
+- `SERVER_NAME` — dashboard title (default `curtain`); rendered as typed.
+- `CONTACT_URL` (+ optional `CONTACT_LABEL`) — footer link to the maintainer's
+  site/portfolio (NOT an admin console); shown only if a valid `http(s)` URL.
+- `DISK_PATH` — path whose filesystem total/free is read (`statfs`); in the
+  container, a read-only bind-mount point on the array.
+- **Storage pie** (max 3): `STORAGE_<n>_NAME` + `STORAGE_<n>_PATH` for n=1..3.
+  Each measured dir is a wedge; remaining used space → "Other", plus "Free".
+  Paths are in-container mount targets, bind-mounted **READ-ONLY** (`:ro`).
+- **Links** (max ~12): `LINK_<n>_LABEL` + `LINK_<n>_URL` + optional
+  `LINK_<n>_ICON` (local `/logos/..` preferred; external `http(s)` allowed but
+  makes visitors' browsers fetch it — privacy/availability cost).
 
-**Security rule:** only read specific, named env vars via the `SERVICES`
-allowlist. NEVER iterate/expose `process.env` wholesale — it holds secrets.
+**Security rules:**
+- All URLs validated to `http(s)` (`isValidHttpUrl`); invalid/missing → omitted
+  (fail closed). Icons: local path or `http(s)` only.
+- Read ONLY these specific, bounded, named vars (fixed prefixes, indices 1..N) —
+  an allowlist by construction. NEVER iterate `process.env` wholesale (secrets).
 
 ## Environment
 

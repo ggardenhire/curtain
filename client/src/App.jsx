@@ -136,18 +136,18 @@ function App() {
             {links.map(link => (
               <li key={link.label}>
                 <a href={link.url} target="_blank" rel="noopener noreferrer">
-                <img className="link-icon" src={link.icon} alt="" />
-                <span>{link.label}</span>
-              </a>
+                  {link.icon && <img className="link-icon" src={link.icon} alt="" />}
+                  <span>{link.label}</span>
+                </a>
               </li>
             ))}
           </ul>
         </nav>
       )}
       </div>
-      {config.adminUrl && (
+      {config.contactUrl && (
         <footer className="admin">
-          <a href={config.adminUrl} target="_blank" rel="noopener noreferrer">Site Admin Contact Page</a>
+          <a href={config.contactUrl} target="_blank" rel="noopener noreferrer">Site Admin Contact Page</a>
         </footer>
 )}
 
