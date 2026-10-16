@@ -7,7 +7,7 @@ async function getMetrics() {
     const freemem = os.freemem();
     const uptime = Math.round(os.uptime()/3600);
 
-    const DISK_PATH = '/'
+    const DISK_PATH = process.env.DISK_PATH || '/'
 
     const memoryStats = {
         usedGB: Math.round((totalmem - freemem) / 1024**3 * 10) / 10,
