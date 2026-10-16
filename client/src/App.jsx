@@ -64,15 +64,40 @@ function App() {
     }
   }
 
-  function buildPie(segments, total) {
+  // a point on a circle; angle 0 = top of the pie, going clockwise
+  function polar(cx, cy, r, angleDeg) {
+    const a = ((angleDeg - 90) * Math.PI) / 180
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)]
+  }
+
+  // "Free" is always black; everything else draws from the palette
+  function sliceColor(label, i) {
+    return label === 'Free' ? '#20262e' : STORAGE_COLORS[i % STORAGE_COLORS.length]
+  }
+
+  // turn segments into SVG donut (annular) paths + where to place each label
+  function buildSlices(segments, total) {
+    const cx = 50, cy = 50, r = 48, ir = 18   // outer radius + inner (hollow) radius
     let acc = 0
-    const stops = segments.map((seg, i) => {
-      const start = (acc / total) * 100
+    return segments.map((seg, i) => {
+      const startAngle = (acc / total) * 360
       acc += seg.bytes
-      const end = (acc / total) * 100
-      return `${STORAGE_COLORS[i % STORAGE_COLORS.length]} ${start}% ${end}%`
+      const endAngle = (acc / total) * 360
+      const [ox1, oy1] = polar(cx, cy, r, startAngle)
+      const [ox2, oy2] = polar(cx, cy, r, endAngle)
+      const [ix2, iy2] = polar(cx, cy, ir, endAngle)
+      const [ix1, iy1] = polar(cx, cy, ir, startAngle)
+      const largeArc = endAngle - startAngle > 180 ? 1 : 0
+      const d = `M ${ox1} ${oy1} A ${r} ${r} 0 ${largeArc} 1 ${ox2} ${oy2} ` +
+                `L ${ix2} ${iy2} A ${ir} ${ir} 0 ${largeArc} 0 ${ix1} ${iy1} Z`
+      const [lx, ly] = polar(cx, cy, (r + ir) / 2, (startAngle + endAngle) / 2)  // middle of the ring
+      return {
+        d, lx, ly,
+        label: seg.label,
+        color: sliceColor(seg.label, i),
+        showLabel: (endAngle - startAngle) / 360 >= 0.08,   // only label if the wedge has room
+      }
     })
-    return `conic-gradient(${stops.join(', ')})`
   }
     
   useEffect(() => {
@@ -117,11 +142,22 @@ function App() {
         <section className="storage">
           <h2>Storage</h2>
           <div className="storage-body">
-            <div className="pie" style={{ background: buildPie(storage.segments, storage.total) }} />
+            <svg className="pie" viewBox="0 0 100 100" role="img" aria-label="Storage usage breakdown">
+              {buildSlices(storage.segments, storage.total).map(s => (
+                <g key={s.label}>
+                  <path d={s.d} fill={s.color} stroke="#0b0d10" strokeWidth="0.75" strokeLinejoin="round" />
+                  {s.showLabel && (
+                    <text x={s.lx} y={s.ly} textAnchor="middle" dominantBaseline="central" className="pie-label">
+                      {s.label}
+                    </text>
+                  )}
+                </g>
+              ))}
+            </svg>
             <ul className="legend">
               {storage.segments.map((seg, i) => (
                 <li key={seg.label}>
-                  <span className="swatch" style={{ background: STORAGE_COLORS[i % STORAGE_COLORS.length] }} />
+                  <span className="swatch" style={{ background: sliceColor(seg.label, i) }} />
                   {seg.label}: {formatGB(seg.bytes)} ({((seg.bytes / storage.total) * 100).toFixed(1)}%)
                 </li>
               ))}
