@@ -122,9 +122,17 @@ body {
 }
 .storage-body { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
 .pie {
-  width: 200px; height: 200px; border-radius: 50%;
-  border: 1px solid var(--oz-green-dim);
-  box-shadow: 0 0 20px rgba(122, 206, 148, 0.2);
+  width: 200px; height: 200px;
+  filter: drop-shadow(0 0 10px rgba(122, 206, 148, 0.25));
+}
+.pie-label {
+  font-size: 6.5px;                     /* viewBox units → ~13px at 200px */
+  font-weight: bold;
+  fill: #eafaf0;                        /* light label text */
+  paint-order: stroke;                  /* draw the halo behind the text */
+  stroke: rgba(0, 0, 0, 0.6);           /* dark halo — reads on green/gold/ruby AND black */
+  stroke-width: 0.9px;
+  pointer-events: none;
 }
 .legend { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 .legend li { display: flex; align-items: center; }
