@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<Container version="1.2.0">
+  <Name>curtain</Name>
+  <Repository>ggarden/curtain:1.2.0</Repository>
+  <Registry>https://hub.docker.com/r/ggarden/curtain</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/ggardenhire/curtain/issues</Support>
+  <Project>https://github.com/ggardenhire/curtain</Project>
+  <Overview>curtain is a public-facing, read-only dashboard for your Unraid server. It shows visitors a curated, admin-approved view: live metrics (CPU load, memory, uptime, disk), a storage breakdown pie, quick links to your public services, and optionally posters for the three most recently added movies.
+
+SECURITY: curtain is intentionally UNAUTHENTICATED - treat everything it serves as public. It is read-only by design (no write/control endpoints), reads only the specific env vars you set (an allowlist - it never enumerates the environment), and sees only the host paths you bind-mount READ-ONLY. Run it non-root with no added capabilities (this template does). Only mount what you are comfortable exposing, and do not expose it to the internet without a reverse proxy you trust.</Overview>
+  <Category>Tools: Network:Web Status:</Category>
+  <WebUI>http://[IP]:[PORT:1939]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/ggardenhire/curtain/main/unraid/curtain.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/ggardenhire/curtain/main/client/public/curtain.png</Icon>
+  <ExtraParams>--read-only --cap-drop=ALL --security-opt=no-new-privileges</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <!-- Web UI port -->
+  <Config Name="WebUI Port" Target="1939" Default="1939" Mode="tcp" Description="Port the dashboard is served on." Type="Port" Display="always" Required="true" Mask="false">1939</Config>
+
+  <!-- General -->
+  <Config Name="Server Name" Target="SERVER_NAME" Default="curtain" Mode="" Description="Dashboard title, rendered as typed." Type="Variable" Display="always" Required="false" Mask="false">curtain</Config>
+  <Config Name="Contact URL" Target="CONTACT_URL" Default="" Mode="" Description="Optional footer link to your site/portfolio. Must be http(s); invalid URLs are dropped." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Contact Label" Target="CONTACT_LABEL" Default="" Mode="" Description="Optional text for the contact link." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Disk Path" Target="DISK_PATH" Default="/data/movies" Mode="" Description="In-container path whose filesystem total/free drives the Disk metric and the pie's Free/Other. Point it at one of the mounted paths below." Type="Variable" Display="advanced" Required="false" Mask="false">/data/movies</Config>
+
+  <!-- Recently Added (latest movie posters) -->
+  <Config Name="Movies Path (Recently Added)" Target="MOVIES_PATH" Default="/data/movies" Mode="" Description="In-container path to the movie library used for the 'Recently Added' posters. Leave as /data/movies to reuse the Movies mount below; unset to disable the feature." Type="Variable" Display="always" Required="false" Mask="false">/data/movies</Config>
+  <Config Name="TMDB API Key" Target="TMDB_API_KEY" Default="" Mode="" Description="Optional. Used server-side only (never sent to the browser) to fetch a poster when a movie has no local poster image. Leave blank to use local posters only." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <!-- Storage pie (labels; paths are the mounts below) -->
+  <Config Name="Storage 1 Name" Target="STORAGE_1_NAME" Default="Movies" Mode="" Description="Label for storage wedge 1." Type="Variable" Display="advanced" Required="false" Mask="false">Movies</Config>
+  <Config Name="Storage 1 Path" Target="STORAGE_1_PATH" Default="/data/movies" Mode="" Description="In-container path measured for wedge 1 (matches the Movies mount)." Type="Variable" Display="advanced" Required="false" Mask="false">/data/movies</Config>
+  <Config Name="Storage 2 Name" Target="STORAGE_2_NAME" Default="Shows" Mode="" Description="Label for storage wedge 2." Type="Variable" Display="advanced" Required="false" Mask="false">Shows</Config>
+  <Config Name="Storage 2 Path" Target="STORAGE_2_PATH" Default="/data/shows" Mode="" Description="In-container path measured for wedge 2 (matches the Shows mount)." Type="Variable" Display="advanced" Required="false" Mask="false">/data/shows</Config>
+  <Config Name="Storage 3 Name" Target="STORAGE_3_NAME" Default="" Mode="" Description="Label for storage wedge 3 (optional)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Storage 3 Path" Target="STORAGE_3_PATH" Default="" Mode="" Description="In-container path measured for wedge 3 (optional; add a matching mount)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- Quick links (optional; add more by cloning these in the Unraid UI) -->
+  <Config Name="Link 1 Label" Target="LINK_1_LABEL" Default="" Mode="" Description="Quick link 1 text (e.g. Plex)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 1 URL" Target="LINK_1_URL" Default="" Mode="" Description="Quick link 1 URL. Must be http(s)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 1 Icon" Target="LINK_1_ICON" Default="" Mode="" Description="Quick link 1 icon. Local /logos/plex.png etc., or an external http(s) image URL." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- READ-ONLY bind mounts: set your HOST paths; container targets are fixed -->
+  <Config Name="Movies (host path)" Target="/data/movies" Default="/mnt/user/Movies" Mode="ro" Description="Your movie library, mounted READ-ONLY. Backs the Storage 'Movies' wedge and 'Recently Added'." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Movies</Config>
+  <Config Name="Shows (host path)" Target="/data/shows" Default="/mnt/user/Shows" Mode="ro" Description="Your TV library, mounted READ-ONLY. Backs the Storage 'Shows' wedge." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Shows</Config>
+  <Config Name="Photos (host path)" Target="/data/photos" Default="" Mode="ro" Description="Optional photo library, mounted READ-ONLY (used only if you add a matching Storage 3 entry)." Type="Path" Display="advanced" Required="false" Mask="false"/>
+</Container>
