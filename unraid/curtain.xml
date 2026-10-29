@@ -30,11 +30,11 @@ SECURITY: curtain is intentionally UNAUTHENTICATED - treat everything it serves 
   <!-- General -->
   <Config Name="Server Name" Target="SERVER_NAME" Default="curtain" Mode="" Description="Dashboard title, rendered as typed." Type="Variable" Display="always" Required="false" Mask="false">curtain</Config>
   <Config Name="Contact URL" Target="CONTACT_URL" Default="" Mode="" Description="Optional footer link to your site/portfolio. Must be http(s); invalid URLs are dropped." Type="Variable" Display="always" Required="false" Mask="false"/>
-  <Config Name="Contact Label" Target="CONTACT_LABEL" Default="" Mode="" Description="Optional text for the contact link." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Contact Label" Target="CONTACT_LABEL" Default="" Mode="" Description="Optional text for the contact link." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Disk Path" Target="DISK_PATH" Default="/data/movies" Mode="" Description="In-container path whose filesystem total/free drives the Disk metric and the pie's Free/Other. Point it at one of the mounted paths below." Type="Variable" Display="advanced" Required="false" Mask="false">/data/movies</Config>
 
   <!-- Recently Added (latest movie posters) -->
-  <Config Name="Movies Path (Recently Added)" Target="MOVIES_PATH" Default="/data/movies" Mode="" Description="In-container path to the movie library used for the 'Recently Added' posters. Leave as /data/movies to reuse the Movies mount below; unset to disable the feature." Type="Variable" Display="always" Required="false" Mask="false">/data/movies</Config>
+  <Config Name="Movies Path (Posters)" Target="MOVIES_PATH" Default="/data/movies" Mode="" Description="In-container path to the movie library used for the 'Recently Added' posters. Leave as /data/movies to reuse the Movies mount below; unset to disable the feature. Update 'TMDB API Key' to pull posters from TMDB." Type="Variable" Display="always" Required="false" Mask="false">/data/movies</Config>
   <Config Name="TMDB API Key" Target="TMDB_API_KEY" Default="" Mode="" Description="Optional. Used server-side only (never sent to the browser) to fetch a poster when a movie has no local poster image. Leave blank to use local posters only." Type="Variable" Display="advanced" Required="false" Mask="true"/>
 
   <!-- Storage pie (labels; paths are the mounts below) -->
