@@ -1,7 +1,7 @@
 {
   "name": "curtain",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A public-facing dashboard for your Unraid server that provides users information of the server that has been deemed public by the Admin. No login nessecary",
   "main": "server.js",
   "scripts": {
