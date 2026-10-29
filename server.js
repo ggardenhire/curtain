@@ -3,6 +3,7 @@ import http from 'node:http';
 import getMetrics from './metrics.js';
 import getLinks from './links.js';
 import { getStorage, refreshStorage } from './storage.js';
+import { refreshPoster, getLatest, getPoster } from './poster.js';
 import getConfig from './config.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,6 +59,23 @@ const server = http.createServer(async (req, res) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(getConfig()));
+    } else if (req.url === '/api/latest' && req.method === 'GET') {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(getLatest()));
+    } else if (req.method === 'GET' && /^\/api\/poster\/\d+$/.test(req.url)) {
+        const index = Number(req.url.slice('/api/poster/'.length));   // regex guarantees digits only
+        const poster = getPoster(index);
+        if (!poster) {
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'not found' }));
+          return;
+        }
+        res.statusCode = 200;
+        res.setHeader('Content-Type', poster.contentType);
+        res.setHeader('Cache-Control', 'no-cache');   // revalidate each time; poster changes when the latest movie does
+        res.end(poster.bytes);
     } else if (req.url === '/api/storage' && req.method === 'GET') {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -112,5 +130,7 @@ async function serveStatic(req, res) {
 server.listen(PORT, () => {
     refreshStorage();
     setInterval(refreshStorage, 10 * 60 * 1000)
+    refreshPoster();
+    setInterval(refreshPoster, 10 * 60 * 6000)
     console.log(`Server running at http://localhost:${PORT}/`);
 });

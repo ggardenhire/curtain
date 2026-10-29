@@ -19,6 +19,7 @@ stage, never backstage.
 - **Live server metrics** — CPU load, memory usage, uptime, and disk usage, refreshed automatically.
 - **Storage breakdown** — a pie chart of up to three named paths (e.g. *Movies*, *Shows*, *Photos*), plus *Other* used space and *Free* space.
 - **Quick links** — admin-defined links to your services, each with an optional custom icon. No service support is hard-coded; add anything.
+- **Recently Added** *(optional)* — posters for the three most recently added movies, from local poster files or an optional TMDB lookup. Off unless configured.
 - **Customizable** — set the dashboard title and a footer contact/portfolio link via environment variables.
 - **Wizard-of-Oz theme** — an Emerald City black-and-green aesthetic.
 - **Fails gracefully** — any unavailable metric shows "unavailable" instead of breaking the page.
@@ -56,6 +57,7 @@ docker run -d --name curtain \
   -e DISK_PATH=/data/movies \
   -e STORAGE_1_NAME=Movies -e STORAGE_1_PATH=/data/movies \
   -e STORAGE_2_NAME=Shows  -e STORAGE_2_PATH=/data/shows \
+  -e MOVIES_PATH=/data/movies \
   -e LINK_1_LABEL=Plex -e LINK_1_URL=http://192.168.1.10:32400 -e LINK_1_ICON=/logos/plex.png \
   -v /mnt/user/Movies:/data/movies:ro \
   -v /mnt/user/Shows:/data/shows:ro \
@@ -87,6 +89,8 @@ services:
       STORAGE_2_PATH: /data/shows
       STORAGE_3_NAME: Photos
       STORAGE_3_PATH: /data/photos
+      MOVIES_PATH: /data/movies
+      # TMDB_API_KEY: "your-key"   # optional poster fallback (see Now Showing)
       LINK_1_LABEL: Plex
       LINK_1_URL: "http://192.168.1.10:32400"
       LINK_1_ICON: /logos/plex.png
@@ -157,6 +161,35 @@ Each entry needs a label and a valid `http(s)` URL; the icon is optional. `n` is
 > image at build time. External icon URLs work too, but cause visitors' browsers
 > to fetch from that third party — self-hosting is preferred.
 
+### Recently Added — latest movie posters (optional)
+
+Shows posters for the **three most recently added** titles in a movie library.
+Entirely optional: if `MOVIES_PATH` is unset, nothing renders.
+
+| Variable | Required | Description |
+|---|---|---|
+| `MOVIES_PATH` | No | In-container path to a movie library (bind-mounted **read-only**). curtain lists the top level, picks the three newest entries (movie folders or bare video files) by modification time, and shows them newest-first. Unset → feature off. |
+| `TMDB_API_KEY` | No | Optional poster fallback. Used per movie, only when a title has no local poster image. |
+
+**How the poster is resolved:**
+
+1. **Local first** — looks for `poster.jpg` / `folder.jpg` / `cover.jpg` inside the
+   movie's folder (or a sidecar image beside a bare video file). No external calls,
+   no API key.
+2. **TMDB fallback** — only if `TMDB_API_KEY` is set *and* no local poster exists.
+   curtain searches [TMDB](https://www.themoviedb.org/) by title/year server-side
+   and **proxies** the image, so visitors' browsers never contact TMDB.
+
+> **Security & privacy**
+> - `MOVIES_PATH` is bind-mounted **read-only**, exactly like the storage paths —
+>   curtain only ever reads it, and symlinks are never followed.
+> - `TMDB_API_KEY` is used **server-side only** — never sent to the browser or
+>   included in any API response.
+> - This feature publicly reveals the **titles and posters of your three most
+>   recently added movies**. It's off by default; enable it only if you're
+>   comfortable disclosing that. With the TMDB fallback on, your movie titles are
+>   also sent to TMDB for lookup.
+
 ---
 
 ## Storage & read-only mounts
@@ -167,11 +200,13 @@ size, **bind-mount it into the container read-only** and point the matching
 
 ```
 -v /mnt/user/Movies:/data/movies:ro      ->   STORAGE_1_PATH=/data/movies
+                                               MOVIES_PATH=/data/movies   (same mount, reused)
 ```
 
 Read-only (`:ro`) is deliberate: curtain only ever *reads*, so even a compromise
 can't modify or delete your media. The set of mounts you provide **is** the
-allowlist of what curtain can see.
+allowlist of what curtain can see. A single read-only mount can back several
+features — e.g. the Storage pie *and* Now Showing can both point at `/data/movies`.
 
 ---
 

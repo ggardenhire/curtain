@@ -7,6 +7,7 @@ function App() {
   const [error, setError] = useState(false)
   const [links, setLinks] = useState([])
   const [storage, setStorage] = useState(null)
+  const [latest, setLatest] = useState(null)
   const [config, setConfig] = useState({ serverName: 'curtain' })
   const STORAGE_COLORS = [
     '#7ace94', // emerald      (first used category)
@@ -64,6 +65,16 @@ function App() {
     }
   }
 
+  async function loadLatest() {
+    try {
+      const res = await fetch('/api/latest')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setLatest(await res.json())
+    } catch (err) {
+      console.error('latest fetch failed:', err.message)
+    }
+  }
+
   // a point on a circle; angle 0 = top of the pie, going clockwise
   function polar(cx, cy, r, angleDeg) {
     const a = ((angleDeg - 90) * Math.PI) / 180
@@ -105,12 +116,14 @@ function App() {
     loadLinks()
     loadConfig()
     loadStorage()
+    loadLatest()
     document.title = config.serverName
     const id = setInterval(() => {
       loadMetrics()
       loadLinks()
       loadConfig()
       loadStorage()
+      loadLatest()
     }
     , 5000)   // then poll every 5s
     return () => clearInterval(id)
@@ -181,6 +194,21 @@ function App() {
         </nav>
       )}
       </div>
+      {latest?.ready && latest.movies?.length > 0 && (
+        <section className="latest">
+          <h2>Recently Added</h2>
+          <div className="latest-grid">
+            {latest.movies.map((m, i) => (
+              <figure className="latest-item" key={m.title}>
+                {m.hasPoster && (
+                  <img key={m.title} className="poster" src={`/api/poster/${i}`} alt={m.title} />
+                )}
+                <figcaption>{m.title}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
       {config.contactUrl && (
         <footer className="admin">
           <a href={config.contactUrl} target="_blank" rel="noopener noreferrer">Site Admin Contact Page</a>
