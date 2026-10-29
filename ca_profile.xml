@@ -1,0 +1,21 @@
+<CommunityApplications>
+  <Profile>
+    curtain is a public-facing, read-only dashboard for your Unraid server. It shows
+    visitors a curated, admin-approved view - live CPU load, memory, uptime and disk
+    metrics, a storage-usage pie, quick links to your public services, and optionally
+    posters for the most recently added movies - with no login. It is read-only by
+    design, only reads the specific environment variables you set, and only sees the
+    host paths you bind-mount read-only.
+
+    This repository maintains a single container: curtain. For help, bug reports, or
+    feature requests, open an issue at https://github.com/ggardenhire/curtain/issues.
+  </Profile>
+  <Icon>https://raw.githubusercontent.com/ggardenhire/curtain/main/client/public/curtain.png</Icon>
+  <WebPage>https://github.com/ggardenhire/curtain</WebPage>
+  <!-- Optional support links -->
+  <!-- <Forum>https://forums.unraid.net/topic/YOUR_SUPPORT_TOPIC</Forum> -->
+  <!-- <Discord>https://discord.gg/YOUR_INVITE_CODE</Discord> -->
+  <!-- Optional profile extras -->
+  <!-- <DonateLink>https://github.com/sponsors/ggardenhire</DonateLink> -->
+  <!-- <DonateText>Support this project</DonateText> -->
+</CommunityApplications>
