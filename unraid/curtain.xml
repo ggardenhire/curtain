@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<Container version="1.2.0">
+<Container version="2">
   <Name>curtain</Name>
-  <Repository>ggarden/curtain:1.2.0</Repository>
+  <Repository>ggarden/curtain:latest</Repository>
   <Registry>https://hub.docker.com/r/ggarden/curtain</Registry>
   <Network>bridge</Network>
   <MyIP/>
@@ -45,13 +45,25 @@ SECURITY: curtain is intentionally UNAUTHENTICATED - treat everything it serves 
   <Config Name="Storage 3 Name" Target="STORAGE_3_NAME" Default="" Mode="" Description="Label for storage wedge 3 (optional)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Storage 3 Path" Target="STORAGE_3_PATH" Default="" Mode="" Description="In-container path measured for wedge 3 (optional; add a matching mount)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
-  <!-- Quick links (optional; add more by cloning these in the Unraid UI) -->
+  <!-- Quick links (optional). Three are templated below; up to 12 total are
+       supported - add LINK_4_* ... LINK_12_* via "Add another ... Variable" in
+       the Unraid UI, following the same LINK_<n>_LABEL / _URL / _ICON pattern. -->
   <Config Name="Link 1 Label" Target="LINK_1_LABEL" Default="" Mode="" Description="Quick link 1 text (e.g. Plex)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Link 1 URL" Target="LINK_1_URL" Default="" Mode="" Description="Quick link 1 URL. Must be http(s)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Link 1 Icon" Target="LINK_1_ICON" Default="" Mode="" Description="Quick link 1 icon. Local /logos/plex.png etc., or an external http(s) image URL." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 2 Label" Target="LINK_2_LABEL" Default="" Mode="" Description="Quick link 2 text." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 2 URL" Target="LINK_2_URL" Default="" Mode="" Description="Quick link 2 URL. Must be http(s)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 2 Icon" Target="LINK_2_ICON" Default="" Mode="" Description="Quick link 2 icon. Local /logos/*.png, or an external http(s) image URL." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 3 Label" Target="LINK_3_LABEL" Default="" Mode="" Description="Quick link 3 text." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 3 URL" Target="LINK_3_URL" Default="" Mode="" Description="Quick link 3 URL. Must be http(s)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Link 3 Icon" Target="LINK_3_ICON" Default="" Mode="" Description="Quick link 3 icon. Local /logos/*.png, or an external http(s) image URL." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
-  <!-- READ-ONLY bind mounts: set your HOST paths; container targets are fixed -->
-  <Config Name="Movies (host path)" Target="/data/movies" Default="/mnt/user/Movies" Mode="ro" Description="Your movie library, mounted READ-ONLY. Backs the Storage 'Movies' wedge and 'Recently Added'." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Movies</Config>
-  <Config Name="Shows (host path)" Target="/data/shows" Default="/mnt/user/Shows" Mode="ro" Description="Your TV library, mounted READ-ONLY. Backs the Storage 'Shows' wedge." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Shows</Config>
+  <!-- READ-ONLY bind mounts: set your HOST paths; container targets are fixed.
+       NOTE: mount (READ-ONLY) any path you want measured in the Storage pie -
+       each STORAGE_<n>_PATH must point at a mount that exists here, or that wedge
+       reads 0. Keep every mount ":ro"; curtain only ever reads. Only mount what
+       you are comfortable exposing publicly. -->
+  <Config Name="Movies (host path)" Target="/data/movies" Default="/mnt/user/data/media/movies" Mode="ro" Description="Your movie library, mounted READ-ONLY. Backs the Storage 'Movies' wedge and 'Recently Added'." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/data/media/movies</Config>
+  <Config Name="Shows (host path)" Target="/data/shows" Default="/mnt/user/data/media/shows" Mode="ro" Description="Your TV library, mounted READ-ONLY. Backs the Storage 'Shows' wedge." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/data/media/shows</Config>
   <Config Name="Photos (host path)" Target="/data/photos" Default="" Mode="ro" Description="Optional photo library, mounted READ-ONLY (used only if you add a matching Storage 3 entry)." Type="Path" Display="advanced" Required="false" Mask="false"/>
 </Container>
