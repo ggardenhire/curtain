@@ -1,6 +1,6 @@
 services:
   curtain:
-    image: ggarden/curtain:1.0.1
+    image: ggarden/curtain:1.2.0
     container_name: curtain
     restart: unless-stopped     # auto-restart on crash / host reboot
 
@@ -19,6 +19,8 @@ services:
       STORAGE_2_PATH: /data/shows
       STORAGE_3_NAME: Photos
       STORAGE_3_PATH: /data/photos
+      MOVIES_PATH: /data/movies
+      # TMDB_API_KEY: "your-key"
       LINK_1_LABEL: Plex
       LINK_1_URL: "http://localhost:32400"
       LINK_1_ICON: /logos/plex.png

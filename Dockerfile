@@ -12,7 +12,7 @@ FROM node:22-alpine AS runtime
 WORKDIR /app
 
 COPY package.json ./
-COPY server.js metrics.js links.js storage.js config.js ./
+COPY server.js metrics.js links.js storage.js config.js poster.js ./
 COPY --from=builder /build/client/dist ./client/dist
 
 USER node                 
