@@ -12,7 +12,7 @@
   <Overview>curtain is a public-facing, read-only dashboard for your Unraid server. It shows visitors a curated, admin-approved view: live metrics (CPU load, memory, uptime, disk), a storage breakdown pie, quick links to your public services, and optionally posters for the three most recently added movies.
 
 SECURITY: curtain is intentionally UNAUTHENTICATED - treat everything it serves as public. It is read-only by design (no write/control endpoints), reads only the specific env vars you set (an allowlist - it never enumerates the environment), and sees only the host paths you bind-mount READ-ONLY. Run it non-root with no added capabilities (this template does). Only mount what you are comfortable exposing, and do not expose it to the internet without a reverse proxy you trust.</Overview>
-  <Category>Tools: Network:Web Status:</Category>
+  <Category>Tools: Network:Web</Category>
   <WebUI>http://[IP]:[PORT:1939]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/ggardenhire/curtain/main/unraid/curtain.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/ggardenhire/curtain/main/client/public/curtain.png</Icon>
